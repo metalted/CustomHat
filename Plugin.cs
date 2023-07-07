@@ -15,17 +15,18 @@ namespace CustomHat
     {
         public const string pluginGuid = "com.metalted.zeepkist.customhat";
         public const string pluginName = "Custom Hat";
-        public const string pluginVersion = "1.1";
+        public const string pluginVersion = "1.2";
 
         public static ConfigFile cfg;
         public static string pluginFolderPath;
         public ConfigEntry<string> hatPath;
         public ConfigEntry<int> rotationSpeed;
+        public ConfigEntry<bool> keepOriginalHat;
 
         private void Awake()
         {
             // Plugin startup logic
-            Logger.LogInfo($"Plugin Custom Hat v1.0 is loaded!");
+            Logger.LogInfo($"Plugin Custom Hat v1.2 is loaded!");
 
             Harmony harmony = new Harmony(pluginGuid);
             harmony.PatchAll();
@@ -33,6 +34,7 @@ namespace CustomHat
             cfg = Config;
             hatPath = Config.Bind("Settings", "Hat File Name", "CustomHat.zeeplevel", "The name of the hat blueprint.");
             rotationSpeed = Config.Bind("Settings", "Rotation Speed", 0, "Angle of rotation each second.");
+            keepOriginalHat = Config.Bind("Settings", "Show Original", false, "Should the original hat still be visible.");
             pluginFolderPath = AppDomain.CurrentDomain.BaseDirectory + @"\BepInEx\plugins";
         }
     }
@@ -146,12 +148,15 @@ namespace CustomHat
                 childs.Add(bp.gameObject.transform);
             }
 
-            //Disable the original hat.
-            MeshRenderer[] renderers = currentCar.theHat.GetComponentsInChildren<MeshRenderer>();
-            foreach (MeshRenderer r in renderers)
+            if (!(bool)CustomHatPlugin.cfg["Settings", "Show Original"].BoxedValue)
             {
-                Debug.Log(r.gameObject.name);
-                r.enabled = false;
+                //Disable the original hat.
+                MeshRenderer[] renderers = currentCar.theHat.GetComponentsInChildren<MeshRenderer>();
+                foreach (MeshRenderer r in renderers)
+                {
+                    Debug.Log(r.gameObject.name);
+                    r.enabled = false;
+                }
             }
 
             //Place the hatParent at the hats position
@@ -204,14 +209,19 @@ namespace CustomHat
 
     public class ObjectRotator : MonoBehaviour
     {
+        int rotationValue = 0;
+
+        void Start()
+        {
+            rotationValue = (int)CustomHatPlugin.cfg["Settings", "Rotation Speed"].BoxedValue;
+        }
         void Update()
         {
-            int value = (int)CustomHatPlugin.cfg["Settings", "Rotation Speed"].BoxedValue;
- 
             // Rotate the object in its local space
-            transform.Rotate(new Vector3(value * Time.deltaTime,0,0), Space.Self);
+            transform.Rotate(new Vector3(rotationValue * Time.deltaTime,0,0), Space.Self);
         }
     }
+
     public class Block
     {
         public int blockID;
