@@ -15,7 +15,7 @@ namespace CustomHat
     {
         public const string pluginGuid = "com.metalted.zeepkist.customhat";
         public const string pluginName = "Custom Hat";
-        public const string pluginVersion = "1.2";
+        public const string pluginVersion = "1.3";
 
         public static ConfigFile cfg;
         public static string pluginFolderPath;
@@ -42,7 +42,7 @@ namespace CustomHat
     [HarmonyPatch(typeof(SetupCar), "SetupCharacter")]
     public class SetupCharacter_Patch
     {
-        public static void Postfix(ref HatValues hat, ref CosmeticColor color, SetupCar __instance)
+        public static void Postfix(ref CosmeticsV16 cosmetics, SetupCar __instance)
         {
             string configuredFileName = (string)CustomHatPlugin.cfg["Settings", "Hat File Name"].BoxedValue;
             try
